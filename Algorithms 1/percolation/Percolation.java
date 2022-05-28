@@ -6,19 +6,24 @@ public class Percolation {
     private boolean[] open;
     private final int length;
     private int numOfOpen;
+    private int topIndex;
 
     // creates n-by-n grid, with all sites initially blocked
     public Percolation(int n) {
         if (n <= 0) {
             throw new IllegalArgumentException("invalid");
         }
-        this.percolation = new WeightedQuickUnionUF(n * n);
-        this.open = new boolean[n * n];
-        for (int i = 0; i < n * n; i++) {
+        this.percolation = new WeightedQuickUnionUF(n * n + 2);
+        // added top , bottom index for shorter runtime
+        this.open = new boolean[n * n + 2];
+        for (int i = 1; i <= n * n; i++) {
             open[i] = false;
         }
+        open[0] = true;
+        open[n * n + 1] = true;
         this.length = n;
         this.numOfOpen = 0;
+        this.topIndex = n * n + 1;
     }
 
     private void validate(int row, int col) {
@@ -33,12 +38,22 @@ public class Percolation {
         validate(row, col);
         int rowZ = row - 1;
         int colZ = col - 1;
-        if (!open[rowZ * length + colZ]) {
-            open[rowZ * length + colZ] = true;
+        int p = colZ + rowZ * length + 1;
+        if (!open[p]) {
+            open[p] = true;
             numOfOpen++;
         }
 
-        int p = colZ + rowZ * length;
+        //connect to top index
+        if (row == 1) {
+            percolation.union(p, 0);
+        }
+        //connect to bottom index
+        if (row == length) {
+            percolation.union(p, length * length + 1);
+
+        }
+
         if (rowZ != 0) {
             if (isOpen(row - 1, col)) {
                 percolation.union(p, p - length);
@@ -64,46 +79,24 @@ public class Percolation {
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
         validate(row, col);
-        return open[(row - 1) * length + col - 1];
+        return open[(row - 1) * length + col];
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
         validate(row, col);
-        int rowZ = row - 1;
-        int colZ = col - 1;
-        if (!isOpen(row, col)) {
-            return false;
-        }
-        int find = percolation.find(colZ + rowZ * length);
-        for (int i = 0; i < length; i++) {
-            if (find == percolation.find(i)) {
-                return true;
-            }
-        }
-        return false;
+        return percolation.find(0) == percolation.find((row - 1) * length + col);
     }
 
     // returns the number of open sites
     public int numberOfOpenSites() {
-        int num = 0;
-        for (boolean i : open) {
-            if (i) {
-                num += 1;
-            }
-        }
-        return num;
+        return numOfOpen;
     }
 
 
     // does the system percolate?
     public boolean percolates() {
-        for (int i = 0; i < length; i++) {
-            if (isFull(length, i + 1)) {
-                return true;
-            }
-        }
-        return false;
+        return percolation.find(0) == percolation.find(length * length + 1);
     }
 
 

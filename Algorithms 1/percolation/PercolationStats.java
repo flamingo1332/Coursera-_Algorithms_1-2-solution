@@ -67,7 +67,7 @@ public class PercolationStats {
         // PercolationStats test = new PercolationStats(Integer.valueOf(args[0]),
         //                                              Integer.valueOf(args[1]));
         //
-        PercolationStats test = new PercolationStats(50, 10);
+        PercolationStats test = new PercolationStats(30, 10);
         // double mean = test.mean();
         System.out.println("mean = " + test.mean());
         System.out.println("stddev = " + test.stddev());
